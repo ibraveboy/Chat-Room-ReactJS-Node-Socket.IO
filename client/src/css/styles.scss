@@ -1,0 +1,107 @@
+// Login Form
+
+.login-main{
+    height: 100vh;
+    background-image: url("../assets/img/login_bg.jpg");
+    //photo credit Photo by Patrick Tomasso on Unsplash
+    background-size: cover;
+    .overlay-white{
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: white;
+        opacity: 0.8;
+        border-radius: 10px;
+    }
+    .login-form{
+        border-radius: 10px;
+        position: relative;
+        padding:100px 50px;
+        box-shadow: 0 0 50px 0px #000;
+        .form-group{
+            position: relative;
+        }
+    }
+}
+
+//Chatroom main
+
+.chatroom-main{
+    height: 100vh;
+    background-image: url("../assets/img/login_bg.jpg");
+    //photo credit Photo by Patrick Tomasso on Unsplash
+    background-size: cover;
+    .overlay-white{
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: white;
+        opacity: 0.8;
+        border-radius: 10px;
+    }
+    .chat-box{
+        box-shadow: 0 0 10px 0px #000;
+        margin-top:50px;
+        background-color: white;
+        border-radius: 20px;
+        padding: 20px 10px;
+        // border:2px solid black;
+        height: 60vh;
+        overflow-y:scroll ;
+        .body{
+            box-shadow: 0 0 10px 0px #000;
+            max-width: 450px;
+            padding: 20px;
+            border-radius: 10px;
+            margin:10px;
+        }
+        .message-left{
+            display: flex;
+        }
+        .message-right{
+           display: flex;
+           flex-direction: row-reverse;
+        }
+        .message-center{
+            display: flex;
+           justify-content: center;
+           align-items: center;
+            .body{
+                max-width: 100%;
+                width: 100%;
+                border:1px solid black;
+                box-shadow: none;
+                padding: 5px;
+                
+                box-sizing: border-box;
+                p{
+                    text-align: center;
+                    font-size: 12px;
+                    margin:0;
+                }
+            }
+        }
+    }
+    .msg-box{
+        box-shadow: 0 0 10px 0px #000;
+        border-radius: 20px;
+        textarea{
+            height: 10vh;
+            border-radius: 20px;
+            padding: 20px;
+        }
+        .input-group-append{
+            border-radius: 20px;
+            button{
+                padding: 0px 50px;
+                cursor: pointer;
+                color:white;
+                border-radius:0px 20px 20px 0px;
+            }
+        }
+    }
+}
