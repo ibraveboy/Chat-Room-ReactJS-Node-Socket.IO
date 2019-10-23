@@ -30,9 +30,12 @@
 
 .chatroom-main{
     height: 100vh;
+    overflow: hidden;
     background-image: url("../assets/img/login_bg.jpg");
     //photo credit Photo by Patrick Tomasso on Unsplash
     background-size: cover;
+    position: relative;
+
     .overlay-white{
         position: absolute;
         top: 0;
@@ -42,6 +45,128 @@
         background-color: white;
         opacity: 0.8;
         border-radius: 10px;
+    }
+    .online-users{
+        position: absolute;
+        top: 0;
+        left: -100%;
+        bottom: 0;
+        min-width:300px;
+        max-width: 720px;
+        width:20%;
+        transition: 0.5s;
+        transition-timing-function: ease-in-out;
+        background-color: white;
+        z-index: 10;
+        box-shadow: 3px 0px 12px 0px;
+        overflow-y: scroll;
+        .online-users-header{
+            padding: 10px 0px;
+            position: relative;
+            .back{
+                position: absolute;
+                display: flex;
+                align-items: center;
+                padding-left: 10px;
+                top:0;
+                left: 0;
+                bottom: 0;
+                right: 0;
+            }
+            h3{
+                color:white;
+            }
+        }
+        .user-list{
+            padding: 10px 5px;
+            border-bottom: 1px solid blue;
+            display: flex;
+            cursor: pointer;
+            transition: 0.5s;
+            &:hover{
+                box-shadow: 0px 2px 10px 0px black;
+            }
+            .avatar{
+                color:white;
+                font-weight: bold;
+                font-size: 20px;
+                padding: 10px;
+                display: inline-block;
+                min-width:50px;
+                text-align: center;
+                text-transform: uppercase;
+            }
+            h5{
+                text-transform: capitalize;
+            }
+        }
+    }
+    .all-groups{
+        position: absolute;
+        top: 0;
+        right: -100%;
+        bottom: 0;
+        min-width:300px;
+        max-width: 720px;
+        width:20%;
+        transition: 0.5s;
+        transition-timing-function: ease-in-out;
+        background-color: white;
+        z-index: 10;
+        box-shadow: 3px 0px 12px 0px;
+        overflow-y: scroll;
+        .all-groups-header{
+            padding: 10px 0px;
+            position: relative;
+            .back{
+                position: absolute;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                padding-right: 10px;
+                top:0;
+                left: 0;
+                bottom: 0;
+                right: 0;
+            }
+            h3{
+                color:white;
+            }
+        }
+        .room-list{
+            padding: 10px 5px;
+            border-bottom: 1px solid blue;
+            display: flex;
+            cursor: pointer;
+            transition: 0.5s;
+            &:hover{
+                box-shadow: 0px 2px 10px 0px black;
+            }
+            .avatar{
+                color:white;
+                font-weight: bold;
+                font-size: 20px;
+                padding: 10px;
+                display: inline-block;
+                min-width:50px;
+                text-align: center;
+                text-transform: uppercase;
+            }
+            h5{
+                text-transform: capitalize;
+            }
+        }
+    }
+    .chatroom-sub{
+        display: flex;
+        justify-content: space-between;
+        h5{
+            cursor: pointer;
+            transition: 0.5s;
+            &:hover{
+                box-shadow: 0px 0px 10px 0px #000;
+            }
+        }
     }
     .chat-box{
         box-shadow: 0 0 10px 0px #000;

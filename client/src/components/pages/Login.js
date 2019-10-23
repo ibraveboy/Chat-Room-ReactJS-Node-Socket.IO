@@ -23,7 +23,7 @@ class Login extends Component {
             alert("Fill all fields.")
             return false
         } else {
-            this.props.history.push("/chatroom?username="+this.state.username+"&&room="+this.state.room)
+            this.props.history.push("/chatroom/"+this.state.username+"/"+this.state.room)
         }
     }
 

@@ -4,6 +4,8 @@ import Layout from "./Layout";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import ChatRoom from "./pages/ChatRoom";
+import Private from "./pages/Private";
+
 
 
 class App extends Component {
@@ -13,7 +15,8 @@ class App extends Component {
         <Layout>
           <Switch>
             <Route path="/" component={Login} exact/>
-            <Route path="/chatroom" component={ChatRoom} />
+            <Route path="/chatroom/:username/:room" component={ChatRoom} />
+            <Route path="/private/:sID/:rID" component={Private} />
             <Route path="/*" component={NotFound} />
           </Switch>
         </Layout>
