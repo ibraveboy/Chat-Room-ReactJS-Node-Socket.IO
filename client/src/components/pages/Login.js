@@ -1,12 +1,16 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom"
+import { connect } from "react-redux"
+import { loginUser,setErrors } from "../../redux/actions/index"
 
 class Login extends Component {
     state = {
         username: "",
-        room:"Choose..."
+        password:"",
+        loader:false
     }
     inputChangeHandler = (e) => {
-        if (e.target.name != "username") { 
+        if (e.target.name == "room") { 
             let select = e.target
             this.setState({
                 room:select.options[select.selectedIndex].value
@@ -19,16 +23,32 @@ class Login extends Component {
     }
 
     chatroomButtonClickHandler = () => {
-        if ((this.state.room == "" || this.state.room == null || this.state.room=="Choose...") || (this.state.username == "" || this.state.username == null)) {
+        if ((this.state.username == "" || this.state.username == null)) {
             alert("Fill all fields.")
             return false
         } else {
-            this.props.history.push("/chatroom/"+this.state.username+"/"+this.state.room)
+            // this.props.history.push("/chatroom/"+this.state.username+"/"+this.state.room)
+            this.setState({
+                loader:true,
+            })
+            this.props.loginUser(this.state)
         }
     }
 
+    componentDidUpdate() {
+        console.log(this.props)
+        if (!this.props.username && this.props.errors) {
+            this.setState({
+                loader:false
+            })
+            this.props.setErrors(false)
+        }else if (this.props.username) {
+            this.props.history.push("/room")
+        }     
+    }
+
     render() {
-        console.log(this.state)
+        
         return (
             <div className="login-main d-flex align-items-center justify-content-center">
                 <form className="login-form">
@@ -52,7 +72,18 @@ class Login extends Component {
                             onChange={this.inputChangeHandler}
                         />
                     </div>
-                    <div className="input-group mb-3">
+                    <div className="form-group">
+                        <label>Password</label>
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Password.."
+                            className="form-control"
+                            value={this.state.password}
+                            onChange={this.inputChangeHandler}
+                        />
+                    </div>
+                    {/* <div className="input-group mb-3">
                         <select
                             className="custom-select"
                             name="room"
@@ -71,15 +102,29 @@ class Login extends Component {
                                 Chatrooms
                             </label>
                         </div>
-                    </div>
+                    </div> */}
                     <div className="form-group">
                         <button
                             type="button"
                             className="btn btn-primary form-control"
                             onClick={this.chatroomButtonClickHandler}
                         >
-                            Enter Chatroom
+                            {(this.state.loader ? (
+                            <div className="spinner-border spinner-border-sm text-light" role="status">
+                                <span className="sr-only">Loading...</span>
+                            </div>
+                            ):null)}
+                            Enter Chatroom 
                         </button>
+                    </div>
+                    <div className="form-group">
+                        <Link
+                            type="button"
+                            className="btn btn-primary form-control"
+                            to="/register"
+                        >
+                            Register
+                        </Link>
                     </div>
                 </form>
             </div>
@@ -87,4 +132,11 @@ class Login extends Component {
     }
 }
 
-export default Login;
+const mapStateToProps = (state) => {
+    return {
+        username: state.username,
+        errors:state.errors
+    }
+}
+
+export default connect(mapStateToProps,{loginUser,setErrors})(Login);

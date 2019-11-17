@@ -5,7 +5,13 @@ const initialState = {
     room: "",
     rooms: [],
     users: [],
-    messages:[]
+    messages: [],
+    errors: false,
+    private: {
+        username: "",
+        socket_id: "",
+    },
+    pMessages:[]
 }
 
 export const reducer = (state = initialState, action) => {
@@ -20,7 +26,8 @@ export const reducer = (state = initialState, action) => {
             return {
                 ...state,
                 username: action.payload.username,
-                room: action.payload.room
+                room: action.payload.room,
+                errors:false,
             }
         break;
         case "PUSH_BOTH_MESSAGE_AND_USER":
@@ -39,7 +46,9 @@ export const reducer = (state = initialState, action) => {
         case "SET_ROOM":
             return {
                 ...state,
-                room:action.payload
+                room: action.payload,
+                users: [],
+                messages:[]
             }
         break;
         case "SET_USERS":
@@ -61,6 +70,36 @@ export const reducer = (state = initialState, action) => {
                 room: action.payload.room,
                 messages: [],
                 users: [],
+            }
+        break;
+        case "SET_ERRORS":
+            return {
+                ...state,
+                errors:action.payload
+            }
+        break;
+        case "SET_PRIVATE_USER":
+            return {
+                ...state,
+                room:"",
+                private: {
+                    username: action.payload.username,
+                    socket_id: action.payload.id
+                },
+                pMessages: [],
+                messages:[]
+            }
+        break;
+        case "PUSH_PRIVATE_MESSAGE":
+            return {
+                ...state,
+                pMessages:[...state.pMessages,action.payload]
+            }
+        break;
+        case "SET_PRIVATE_MESSAGES":
+            return {
+                ...state,
+                pMessages:[...action.payload]
             }
         break;
     }

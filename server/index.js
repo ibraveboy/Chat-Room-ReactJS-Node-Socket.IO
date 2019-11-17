@@ -8,6 +8,7 @@ const passport = require("passport")
 const JwtSrategy = require("./authentication/jwtstrategy")
 const dbConnect = require("./Database/connection")
 const UserModel = require("./models/UserModel")
+const PrivateChatModel = require("./models/PrivateChat")
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt")
 const port = process.env.PORT || 3000;
@@ -54,6 +55,59 @@ io.on("connection", socket => {
         socket.emit("messageReceived", message)
     })
 
+    //When User Will Emit Private Message
+    socket.on("sendPrivateMessage", message => {
+        
+        const rUser = users.find((user) => user.username == message.recieverUsername)
+        PrivateChatModel.find(
+            {
+                $or: [{
+                    $and: [{ senderUsername: message.senderUsername }, { recieverUsername: message.recieverUsername }]
+                }, {
+                        $and: [{ recieverUsername: message.senderUsername }, { senderUsername: message.recieverUsername }]
+                    }
+                ]
+            },
+            {
+                senderUsername: 1,
+                recieverUsername:1,
+            }
+        ).then(chat => {
+            
+            if (chat.length) {
+                let messageObj = {
+                    senderUsername: message.senderUsername,
+                    text: message.text,
+                    time:Date.now()
+                }
+                PrivateChatModel.findOneAndUpdate({ senderUsername: chat[0].senderUsername, recieverUsername: chat[0].recieverUsername }, {
+                    $push:{messages:messageObj}
+                }, { new: true, projection: { messages: { $elemMatch: {time:messageObj.time}}}})
+                    .then(chatSingle => {
+                    console.log(chatSingle)
+                    if(rUser)
+                        socket.to(`${rUser.id}`).emit("recievedPrivateMessage", chatSingle)
+                    socket.emit("recievedPrivateMessage", chatSingle)
+                })
+            } else {
+                let chatObj = {
+                    senderUsername: message.senderUsername,
+                    recieverUsername: message.recieverUsername,
+                    messages: [{
+                        senderUsername: message.senderUsername,
+                        text:message.text
+                    }]
+                }
+                const newChat = new PrivateChatModel(chatObj)
+                newChat.save().then(chat => {
+                    if(rUser)
+                        socket.to(`${rUser.id}`).emit("recievedPrivateMessage", chat)
+                    socket.emit("recievedPrivateMessage", chat)
+                })
+            }
+        })
+    })
+
     //When User change room
     socket.on("changeRoom", (roomsInfo) => {
         console.log("roomchange",roomsInfo)
@@ -70,6 +124,12 @@ io.on("connection", socket => {
         socket.to(roomsInfo.old).emit("allUsers", roomMembers)
         
     })
+
+    //When User Leave Room
+    socket.on("leaveRoom", (roomInfo) => {
+        socket.to(roomInfo.roomName).emit("leaveRoom", roomInfo)
+    })
+
 
     //When User Went Offline
     socket.on("disconnect", () => {
@@ -107,7 +167,7 @@ app.post("/login", (req, res) => {
                         },
                             "secret",
                             (err,token) => {
-                                res.json(token)
+                                res.json("Bearer "+token)
                             }
                         )
                     } else {
@@ -123,10 +183,10 @@ app.post("/login", (req, res) => {
 
 
 app.post("/register", (req,res) => {
-    const { username, password } = req.body;
+    const { username, password,room } = req.body;
     bcrypt.hash(password, 4, (err,hash) => {
         if (!err) {
-            const newUser = new UserModel({ username, password:hash })
+            const newUser = new UserModel({ username, password:hash,room })
             newUser
                 .save()
                 .then((user) => {
@@ -151,9 +211,31 @@ app.get("/me", passport.authenticate("jwt", { session: false }), (req,res) => {
     res.json(req.user)
 })
 
-app.get("/*", (req, res) => {
-    res.sendFile("../client/dist/index.html");
-});
+app.post("/update", passport.authenticate("jwt", { session: false }), (req,res) => {
+    const { room } = req.body
+    console.log(req.user,room)
+    UserModel.findOneAndUpdate({ _id: req.user._id }, { room })
+        .then(u => {
+            res.send(room)
+        })
+        .catch(err => {
+            res.status(404).send("Room Not Updated.")
+        })
+})
+
+//Get Private Messages
+
+app.get("/privateMessages/:rUsername",passport.authenticate("jwt", { session: false }), (req,res) => {
+    const rUsername = req.params.rUsername
+    const sUsername = req.user.username
+    PrivateChatModel.find({ $or: [{ $and: [{ senderUsername: sUsername }, { recieverUsername: rUsername }] }, {$and: [{ recieverUsername: sUsername }, { senderUsername: rUsername }] }] }).then(chat => {
+        res.json(chat)
+    })
+})
+
+// app.get("/*", (req, res) => {
+//     res.sendFile("../client/dist/index.html");
+// });
 
 server.listen(port, () => {
     console.log("server is litening on port 3000");

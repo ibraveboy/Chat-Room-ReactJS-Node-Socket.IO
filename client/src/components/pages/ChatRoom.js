@@ -3,7 +3,7 @@ import io from "socket.io-client"
 import { animateScroll } from "react-scroll"
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa"
 import { connect } from "react-redux"
-import { pushMessageAndUser, pushMessage, setUser, setUsers, setRooms, setDefault, setSocket } from '../../redux/actions'
+import { pushMessageAndUser, pushMessage, setUser, setUsers, setRooms, setDefault, setSocket,setRoom,setPrivateUser } from '../../redux/actions'
 
 class ChatRoom extends Component {
     state = {
@@ -13,11 +13,11 @@ class ChatRoom extends Component {
         isSocketInit:false
     }
     initSocket = () => {
-        let username = this.props.match.params.username || "hamza"
-        let room = this.props.match.params.room || "react"
+        let username = this.props.username || "hamza"
+        let room = this.props.room || "react"
         
         // this.props.setUser({username,room})
-        this.props.setUser({username,room})
+        // this.props.setUser({username,room})
         this.props.socket.emit("user", { username: username, room: room })
         
         this.setState({
@@ -59,6 +59,19 @@ class ChatRoom extends Component {
             this.props.pushMessage(messageObj)
         })
 
+
+        //Message On, When User Left Room For Private Chat
+
+        this.props.socket.on("leaveRoom", (roomInfo) => {
+            let message = `${roomInfo.username} has left this room`;
+            let messageObj = {
+                message,
+                type: "newUser",
+                name:roomInfo.username
+            }
+            this.props.pushMessage(messageObj)
+        })
+
         // User Went Offline 
         this.props.socket.on("userLeft", (user) => {
             let message = `${user.username} has left this room`;
@@ -92,6 +105,7 @@ class ChatRoom extends Component {
                 type:(this.props.username==message.username?"left":"right")
             }
             this.props.pushMessage(msg)
+            this.scrollToBottom()
         })
     }
     scrollToBottom = () => {
@@ -147,15 +161,30 @@ class ChatRoom extends Component {
 
     //Click Handler To Change Room
     roomClickHandler = (userName, roomName) => {
-        if(this.props.match.params.room!=roomName || this.props.match.params.username != userName )
-            this.props.history.replace("/chatroom/" + userName + "/" + roomName)
+        
+        if (this.props.room != roomName) {
+            let roomsInfo = {
+                old: this.props.room,
+                new: roomName,
+                username: this.props.username
+            }
+            this.props.setRoom(roomName)
+            this.setState({
+                    text: "",
+                    showOnlineUsers: false,
+                    showAllGroups: false,
+            })
+            this.props.socket.emit("changeRoom", roomsInfo)
+        }
         else
             alert("You are alredy in this room.")
     }
 
     //Click Handler To Change Room
-    privateChatClickHandler = (senderID) => {
-        this.props.history.push("/private/"+senderID+"/"+this.props.socket.id)
+    privateChatClickHandler = (user) => {
+        this.props.socket.emit("leaveRoom",{username:this.props.username,roomName:this.props.room})
+        this.props.setPrivateUser(user)
+        this.props.history.push("/private/"+user.username)
     }
 
     //Component Did Update
@@ -165,30 +194,31 @@ class ChatRoom extends Component {
         if(!this.state.isSocketInit)
             this.initSocket()
             // If User Change Room
-        else if (this.props.match.params.room != this.props.room || this.props.match.params.username != this.props.username) {
+        // else if (this.props.match.params.room != this.props.room || this.props.match.params.username != this.props.username) {
             // this.socket.disconnect()
             // this.socket = io("http://localhost:3000/")
-            let roomsInfo = {
-                old: this.props.room,
-                new: this.props.match.params.room,
-                username: this.props.username
-            }
-            let username = this.props.match.params.username
-            let room = this.props.match.params.room
-            this.props.setDefault({ username, room })
-            this.setState({
-                 text: "",
-                 showOnlineUsers: false,
-                 showAllGroups: false,
-             })
+            // let roomsInfo = {
+            //     old: this.props.room,
+            //     new: this.props.match.params.room,
+            //     username: this.props.username
+            // }
+            // let username = this.props.match.params.username
+            // let room = this.props.match.params.room
+            // this.props.setDefault({ username, room })
+            // this.setState({
+            //      text: "",
+            //      showOnlineUsers: false,
+            //      showAllGroups: false,
+            //  })
             
-            this.props.socket.emit("changeRoom", roomsInfo)
+            // this.props.socket.emit("changeRoom", roomsInfo)
 
-        }
+        // }
     }
 
 
     render() {
+        console.log(this.props);
         
         //Initialize Socket
         if (!this.props.socket) {
@@ -222,7 +252,7 @@ class ChatRoom extends Component {
                 <div
                     className="user-list"
                     key={user.username + (Math.random() * 10)}
-                    onClick={()=>this.privateChatClickHandler(user.id)}
+                    onClick={()=>this.privateChatClickHandler(user)}
                 >
                     <div>
                         <span className="rounded-circle avatar bg-primary">
@@ -359,4 +389,4 @@ const mapStateToProps = (state) => {
     }
 }
 
-export default connect(mapStateToProps, {pushMessageAndUser, pushMessage, setUser, setUsers, setRooms, setDefault,setSocket})(ChatRoom)
+export default connect(mapStateToProps, {pushMessageAndUser, pushMessage, setUser, setUsers, setRooms, setDefault,setSocket,setRoom,setPrivateUser})(ChatRoom)
